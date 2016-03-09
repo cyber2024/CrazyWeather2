@@ -1,0 +1,33 @@
+<resources>
+    <string name="app_name">Crazy Weather</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="openweather_scheme" translatable="false">http</string>
+    <string name="openweather_authority" translatable="false">api.openweathermap.org</string>
+    <string name="openweather_endpoint" translatable="false">/data/2.5/forecast</string>
+    <string name="action_settings" translatable="false">Settings</string>
+    <string name="action_refresh" translatable="false">Refresh Data</string>
+    <string name="title_activity_day_detail">Weather Inspection</string>
+    <string name="title_activity_settings">Settings</string>
+    <string name="pref_location_key" translatable="false">location</string>
+    <string name="pref_location_title">Location</string>
+    <string name="pref_location_default">Perth,WA</string>
+    <string name="pref_units_key" translatable="false">units</string>
+    <string name="pref_units_title">Units</string>
+    <string name="pref_units_default">metric</string>
+    <string name="action_show_on_map">Show Location On Map</string>
+
+    <string name="action_share_label">Share</string>
+
+
+    <!--prefs-->
+    <array name="pref_unit_entries">
+        <item>Celcius</item>
+        <item>Fahrenheit</item>
+    </array>
+    <array name="pref_unit_values">
+        <item>metric</item>
+        <item>imperial</item>
+    </array>
+</resources>
