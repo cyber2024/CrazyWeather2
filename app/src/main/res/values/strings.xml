@@ -1,26 +1,61 @@
-<resources>
+<resources xmlns:xliff="http://schemas.android.com/tools">
     <string name="app_name">Crazy Weather</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="openweather_scheme" translatable="false">http</string>
     <string name="openweather_authority" translatable="false">api.openweathermap.org</string>
-    <string name="openweather_endpoint" translatable="false">/data/2.5/forecast</string>
+    <string name="openweather_endpoint" translatable="false">/data/2.5/forecast/daily</string>
     <string name="action_settings" translatable="false">Settings</string>
     <string name="action_refresh" translatable="false">Refresh Data</string>
     <string name="title_activity_day_detail">Weather Inspection</string>
     <string name="title_activity_settings">Settings</string>
+
     <string name="pref_location_key" translatable="false">location</string>
     <string name="pref_location_title">Location</string>
     <string name="pref_location_default">Perth,WA</string>
     <string name="pref_units_key" translatable="false">units</string>
     <string name="pref_units_title">Units</string>
     <string name="pref_units_default">metric</string>
+
+    <string name="pref_notifications_key" translatable="false">notificationsOn</string>
+    <string name="pref_notifications_title">Weather Notifications</string>
+    <string name="pref_notifications_true">Enabled</string>
+    <string name="pref_notifications_false">Not Enabled</string>
+    <string name="pref_notifications_default">true</string>
+
     <string name="action_show_on_map">Show Location On Map</string>
+    <string name="forcast_length">14</string>
 
     <string name="action_share_label">Share</string>
 
 
+    <string name="today">Today</string>
+    <string name="tomorrow">Tomorrow</string>
+    <string name="format_full_friendly_date"><xliff:g id="day">%1$s</xliff:g>, <xliff:g id="date">%2$s</xliff:g></string>
+    <string name="format_temperature"><xliff:g id="temp">%1.0f</xliff:g>\u00B0</string>
+
+    <string name="title_widget_today">Crazy Weather Widget</string>
+    <string name="format_wind_mph">
+        Wind: <xliff:g id="speed">%1$1.0f</xliff:g>mph <xliff:g id="direction">%2$s</xliff:g>
+    </string>
+    <string name="format_wind_kph">
+        Wind: <xliff:g id="speed">%1$1.0f</xliff:g>kph <xliff:g id="direction">%2$s</xliff:g>
+    </string>
+    <string name="format_pressure">
+        Pressure: <xliff:g id="pressure">%1.0f</xliff:g> hpa
+    </string>
+    <string name="format_humidity">
+        Humidity: <xliff:g id="humidity">%1.0f</xliff:g>%%
+    </string>
+
+    <string name="sync_account_type">crazyweather.ggg.com</string>
+    <string name="content_authority">com.ggg.crazyweather2</string>
+
+    <string name="format_notification">
+        Forecast: <xliff:g id="condition">%1$s</xliff:g> Max: <xliff:g id="high">%2$s</xliff:g> Min: <xliff:g id="low">%3$s</xliff:g>
+    </string>
+    <string name="pref_last_notification">last_notification</string>
     <!--prefs-->
     <array name="pref_unit_entries">
         <item>Celcius</item>
@@ -30,4 +65,6 @@
         <item>metric</item>
         <item>imperial</item>
     </array>
+    
+    <string name="broadcast_action_data_updated">com.ggg.crazyweather.ACTION_DATA_UPDATED</string>
 </resources>

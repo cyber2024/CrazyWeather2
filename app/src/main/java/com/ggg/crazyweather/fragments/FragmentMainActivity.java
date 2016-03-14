@@ -2,11 +2,14 @@ package com.ggg.crazyweather.fragments;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -15,13 +18,13 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import com.ggg.crazyweather.R;
-
-import java.util.ArrayList;
+import com.ggg.crazyweather.helpers.Utility;
+import com.ggg.crazyweather.persistence.ForecastAdapter;
+import com.ggg.crazyweather.persistence.WeatherContract;
+import com.ggg.crazyweather.sync.WeatherSyncAdapter;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -31,14 +34,46 @@ import java.util.ArrayList;
  * Use the {@link FragmentMainActivity#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class FragmentMainActivity extends Fragment {
+public class FragmentMainActivity extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
     public static final String TAG = FragmentMainActivity.class.getSimpleName();
+    public static final int LOADER_ID = 0;
+    int mPosition = 0;
+    ListView mListView;
+    private boolean mUseTodayLayout;
+
+    public static final String[] FORECAST_COLUMN_PROJECTION = {
+            WeatherContract.WeatherEntry.TABLE_NAME + "." + WeatherContract.WeatherEntry._ID,
+            WeatherContract.WeatherEntry.COLUMN_DATE,
+            WeatherContract.WeatherEntry.COLUMN_SHORT_DESC,
+            WeatherContract.WeatherEntry.COLUMN_MAX_TEMP,
+            WeatherContract.WeatherEntry.COLUMN_MIN_TEMP,
+            WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING,
+            WeatherContract.WeatherEntry.COLUMN_WEATHER_ID,
+            WeatherContract.LocationEntry.COLUMN_COORD_LAT,
+            WeatherContract.LocationEntry.COLUMN_COORD_LONG
+    };
+    public static final int
+            COL_WEATHER_ID = 0,
+            COL_WEATHER_DATE = 1,
+            COL_WEATHER_DESC = 2,
+            COL_WEATHER_MAX_TEMP = 3,
+            COL_WEATHER_MIN_TEMP = 4,
+            COL_LOCATION_SETTING = 5,
+            COL_WEATHER_CONDITION_ID = 6,
+            COL_COORD_LAT = 7,
+            COL_COORD_LONG = 8;
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        getLoaderManager().initLoader(0, null, this);
+        super.onActivityCreated(savedInstanceState);
+    }
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
-    private ArrayAdapter<String> adapter;
+    private ForecastAdapter mForecastAdapter;
 
     // TODO: Rename and change types of parameters
     private String mParam1;
@@ -72,18 +107,19 @@ public class FragmentMainActivity extends Fragment {
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.forecast_fragment, menu);
     }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch(item.getItemId()){
+        switch (item.getItemId()) {
             case R.id.action_refresh:
-                mListener.updateDataFromServer();
-                break;
+                updateWeather();
+                return true;
             case R.id.action_settings:
                 mListener.startSettings();
-                break;
+                return true;
             case R.id.action_show_on_map:
-                openPrefferedLocationOnMap();
-                break;
+                openPreferredLocationOnMap();
+                return true;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -101,21 +137,29 @@ public class FragmentMainActivity extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
+        if(savedInstanceState != null){
+            mPosition = savedInstanceState.getInt("position");
+            Log.d(TAG, String.format("Loaded position %d", mPosition));
+        }
         View rootView = inflater.inflate(R.layout.fragment_main_activity, container, false);
+        mListView = (ListView) rootView.findViewById(R.id.lv_forecast_daily);
 
-        ListView lv = (ListView) rootView.findViewById(R.id.lv_forecast_daily);
-        adapter = new ArrayAdapter<String>(getActivity(), R.layout.day_list_item, R.id.tvListItemDay, new ArrayList<String>());
-        lv.setAdapter(adapter);
-        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        mForecastAdapter = new ForecastAdapter(getActivity(), null, 0);
+        mForecastAdapter.setUseTodayLayout(mUseTodayLayout);
+        mListView.setAdapter(mForecastAdapter);
+        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                String desc = adapter.getItem(position);
-                Toast.makeText(getContext(), desc, Toast.LENGTH_SHORT).show();
-                mListener.selectedListItem(desc);
-
+            public void onItemClick(AdapterView parent, View view, int position, long id) {
+                Cursor cursor = (Cursor) parent.getItemAtPosition(position);
+                String locationSetting = Utility.getPreferredLocation(getActivity());
+                mListener.selectedListItem(
+                        WeatherContract.WeatherEntry.buildWeatherLocationWithDate(
+                                locationSetting,
+                                cursor.getLong(COL_WEATHER_DATE)));
+                mPosition = position;
             }
         });
-
         return rootView;
     }
 
@@ -143,6 +187,45 @@ public class FragmentMainActivity extends Fragment {
         mListener = null;
     }
 
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        Uri weatherWithLocationUri =
+                WeatherContract.WeatherEntry.buildWeatherLocationWithStartDate(
+                        Utility.getPreferredLocation(getActivity()),
+                        System.currentTimeMillis()
+                );
+        String sortOrder = WeatherContract.WeatherEntry.COLUMN_DATE + " ASC";
+        return new CursorLoader(
+                getActivity(),
+                weatherWithLocationUri,
+                FORECAST_COLUMN_PROJECTION,
+                null,
+                null,
+                sortOrder
+        );
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        mForecastAdapter.swapCursor(data);
+        mListView.setSelection(mPosition);
+    }
+
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        if(mPosition != ListView.INVALID_POSITION) {
+            outState.putInt("position", mPosition);
+            Log.d(TAG, String.format("Saved position %d", mPosition));
+        }
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        mForecastAdapter.swapCursor(null);
+    }
+
     /**
      * This interface must be implemented by activities that contain this
      * fragment to allow an interaction in this fragment to be communicated
@@ -155,32 +238,56 @@ public class FragmentMainActivity extends Fragment {
      */
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
-        void selectedListItem(String data);
+        void selectedListItem(Uri weatherWithLocationAndDateUri);
+
         void onFragmentInteraction(Uri uri);
-        void updateDataFromServer();
+
         void startSettings();
     }
 
-    public void updateData(String[] newData){
-        adapter.clear();
-        for(String forecast : newData){
-            adapter.add(forecast);
+    public void onLocationChanged() {
+        updateWeather();
+        getLoaderManager().restartLoader(LOADER_ID, null, this);
+    }
+
+    public void openPreferredLocationOnMap() {
+
+        if(mForecastAdapter != null){
+            Cursor c = mForecastAdapter.getCursor();
+            if(c != null){
+                c.moveToPosition(0);
+                String posLat = c.getString(COL_COORD_LAT);
+                String posLong = c.getString(COL_COORD_LONG);
+                Uri geoLocation = Uri.parse("geo:" + posLat + "," + posLong);
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+
+                intent.setData(geoLocation);
+                if (intent.resolveActivity(getContext().getPackageManager()) != null) {
+                    startActivity(intent);
+                } else {
+                    Log.d(TAG, "Couldnt call " + geoLocation.toString() + ", no available app to show map");
+                }
+            }
         }
     }
 
-    public void openPrefferedLocationOnMap(){
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
-        String location = prefs.getString(getString(R.string.pref_location_key), getString(R.string.pref_location_default));
-        Uri geolocation = Uri.parse("geo:0,0?").buildUpon()
-                .appendQueryParameter("q", location)
-                .build();
-        Intent intent = new Intent(Intent.ACTION_VIEW);
-        intent.setData(geolocation);
-        if(intent.resolveActivity(getContext().getPackageManager()) != null){
-            startActivity(intent);
-        }else {
-            Log.d(TAG, "Couldnt call " + location + ", no available app to show map");
-        }
+    public void updateWeather() {
+        WeatherSyncAdapter.syncImmediately(getActivity());
 
+//        AlarmManager alarmManager = (AlarmManager) getActivity().getSystemService(Context.ALARM_SERVICE);
+//        Intent intent = new Intent(getActivity(), WeatherService.AlarmReceiver.class);
+//        intent.putExtra(WeatherService.LOCATION_QUERY_EXTRA,
+//                Utility.getPreferredLocation(getActivity()));
+//        PendingIntent alarmIntent = PendingIntent.getBroadcast(getActivity(), 0, intent, PendingIntent.FLAG_ONE_SHOT);
+//
+//        alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+//                SystemClock.elapsedRealtime() +5000, alarmIntent);
+    }
+
+    public void setUseTodayLayout(boolean useTodayLayout){
+        mUseTodayLayout = useTodayLayout;
+        if(mForecastAdapter != null){
+            mForecastAdapter.setUseTodayLayout(mUseTodayLayout);
+        }
     }
 }

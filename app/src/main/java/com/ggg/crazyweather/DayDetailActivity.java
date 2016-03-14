@@ -10,6 +10,7 @@ import android.support.v7.widget.Toolbar;
 import com.ggg.crazyweather.fragments.FragmentDayDetail;
 
 public class DayDetailActivity extends AppCompatActivity implements FragmentDayDetail.OnFragmentInteractionListener{
+    public Uri mForecastUri;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -18,12 +19,15 @@ public class DayDetailActivity extends AppCompatActivity implements FragmentDayD
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        Intent intent = getIntent();
+        if(intent != null)
+            mForecastUri = intent.getData();
 
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         FragmentManager fm = getSupportFragmentManager();
         fm.beginTransaction()
-                .replace(R.id.container, FragmentDayDetail.newInstance(getIntent().getStringExtra("extradata"), ""), FragmentDayDetail.TAG)
+                .replace(R.id.detail_fragment_container, FragmentDayDetail.newInstance(mForecastUri, ""), FragmentDayDetail.TAG)
                 .commit();
 
 

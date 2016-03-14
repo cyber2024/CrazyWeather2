@@ -10,4 +10,7 @@ public class ApplicationTest extends ApplicationTestCase<Application> {
     public ApplicationTest() {
         super(Application.class);
     }
+    public void testThatTestsTheTest(){
+        assertEquals("These should be equal",1,1);
+    }
 }

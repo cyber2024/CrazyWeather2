@@ -1,0 +1,116 @@
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.ggg.crazyweather.fragments.FragmentDayDetail"
+    android:paddingTop="16dp"
+    android:paddingLeft="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:layout_width="180dp"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingLeft="32dp">
+
+            <TextView
+                android:id="@+id/tvListItemDay"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Today"
+                android:fontFamily="sans-serif-condensed"
+                android:textSize="24sp"
+                android:textColor="#000000"/>
+
+            <TextView
+                android:id="@+id/tvListItemDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="June 24"
+                android:fontFamily="sans-serif-condensed"
+                android:textSize="20sp"
+                android:textColor="#646464"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+
+            <TextView
+                android:id="@+id/tvListItemMax"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-condensed"
+                android:textSize="96sp"
+                android:textColor="#000000"
+                android:text="14°"/>
+
+            <TextView
+                android:id="@+id/tvListItemMin"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:fontFamily="sans-serif-condensed"
+                android:textSize="48sp"
+                android:textColor="#646464"
+                android:text="14°"/>
+
+            <TextView
+                android:id="@+id/tvListItemHumidity"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-condensed"
+                android:textSize="22sp"
+                android:text="100%"/>
+
+            <TextView
+                android:id="@+id/tvListItemWind"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-condensed"
+                android:textSize="22sp"
+                android:text="6 kph NW"/>
+
+            <TextView
+                android:id="@+id/tvListItemPressure"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-condensed"
+                android:textSize="22sp"
+                android:text="1014"/>
+
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+            <ImageView
+                android:id="@+id/list_item_icon"
+                android:layout_width="144dp"
+                android:layout_height="144dp"
+                android:src="@drawable/art_clear"/>
+
+            <TextView
+                android:id="@+id/tvListItemWeatherDesc"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-condensed"
+                android:textSize="22sp"
+                android:text="Clear"/>
+        </LinearLayout>
+
+
+    </LinearLayout>
+
+</ScrollView>
